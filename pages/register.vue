@@ -60,101 +60,101 @@
   </div>
 </template>
 <script>
-import { mapMutations } from 'vuex'
+import { mapMutations } from "vuex";
 export default {
   data() {
     return {
       form: {
         name: {
-          label: '名前',
+          label: "名前",
           val: null,
           errorMessage: null
         },
         imageUrl: {
-          label: 'アイコン画像',
+          label: "アイコン画像",
           val: null,
           errorMessage: null
         }
       }
-    }
+    };
   },
   computed: {
     isValidateError() {
-      return this.form.name.errorMessage || this.form.imageUrl.errorMessage
+      return this.form.name.errorMessage || this.form.imageUrl.errorMessage;
     }
   },
   methods: {
-    ...mapMutations('alert', ['setMessage']),
+    ...mapMutations("alert", ["setMessage"]),
     selectImage() {
-      this.$refs.image.click()
+      this.$refs.image.click();
     },
     onSelectFile(e) {
-      const files = e.target.files
-      if (files.length === 0) return
-      const reader = new FileReader()
-      reader.readAsDataURL(files[0])
-      reader.addEventListener('load', () => {
+      const files = e.target.files;
+      if (files.length === 0) return;
+      const reader = new FileReader();
+      reader.readAsDataURL(files[0]);
+      reader.addEventListener("load", () => {
         this.upload({
           localImageFile: files[0]
-        })
-      })
+        });
+      });
     },
     async upload({ localImageFile }) {
-      const user = await this.$auth()
+      const user = await this.$auth();
       // 未ログインの場合
-      if (!user) this.$router.push('/login')
+      if (!user) this.$router.push("/login");
       // // ストレージオブジェクト作成
-      const storageRef = this.$fireStorage.ref()
+      const storageRef = this.$fireStorage.ref();
       // ファイルのパスを設定
       const imageRef = storageRef.child(
         `images/${user.uid}/${localImageFile.name}`
-      )
+      );
       // ファイルを適用してファイルアップロード開始
-      const snapShot = await imageRef.put(localImageFile)
-      this.form.imageUrl.val = await snapShot.ref.getDownloadURL()
-      this.validateImageUrl()
+      const snapShot = await imageRef.put(localImageFile);
+      this.form.imageUrl.val = await snapShot.ref.getDownloadURL();
+      this.validateImageUrl();
     },
     validateName() {
-      const { name } = this.form
-      const maxLength = 8
+      const { name } = this.form;
+      const maxLength = 8;
       if (!name.val) {
-        name.errorMessage = `${name.label}は必須入力項目です`
-        return
+        name.errorMessage = `${name.label}は必須入力項目です`;
+        return;
       }
       if (name.val.length > maxLength) {
-        name.errorMessage = `${name.label}は${maxLength}文字以内です。`
-        return
+        name.errorMessage = `${name.label}は${maxLength}文字以内です。`;
+        return;
       }
-      name.errorMessage = null
+      name.errorMessage = null;
     },
     validateImageUrl() {
-      const { imageUrl } = this.form
+      const { imageUrl } = this.form;
       if (!imageUrl.val) {
-        imageUrl.errorMessage = `${imageUrl.label}は必須入力項目です`
-        return
+        imageUrl.errorMessage = `${imageUrl.label}は必須入力項目です`;
+        return;
       }
-      imageUrl.errorMessage = null
+      imageUrl.errorMessage = null;
     },
     async onSubmit() {
-      const user = await this.$auth()
+      const user = await this.$auth();
       // 未ログインの場合
-      if (!user) this.$router.push('/login')
-      this.validateName()
-      this.validateImageUrl()
-      if (this.isValidateError) return
+      if (!user) this.$router.push("/login");
+      this.validateName();
+      this.validateImageUrl();
+      if (this.isValidateError) return;
       try {
         await this.$firestore
-          .collection('users')
+          .collection("users")
           .doc(user.uid)
           .set({
             name: this.form.name.val,
             iconImageUrl: this.form.imageUrl.val
-          })
-        this.$router.push('/')
+          });
+        this.$router.push("/");
       } catch (e) {
-        console.log(e)
+        this.setMessage({ message: '登録に失敗しました。' })
       }
     }
   }
-}
+};
 </script>
